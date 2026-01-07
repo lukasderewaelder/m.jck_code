@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weihnachts-Tresor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Nunito:wght@400;700&display=swap');
+
+        body {
+            font-family: 'Nunito', sans-serif;
+            background: linear-gradient(to bottom, #1a472a, #2d5a3f);
+            overflow: hidden;
+            touch-action: manipulation;
+        }
+
+        h1, h2 {
+            font-family: 'Mountains of Christmas', cursive;
+        }
+
+        /* Snowflake Animation */
+        .snowflake {
+            position: absolute;
+            top: -10px;
+            color: #fff;
+            animation: fall linear forwards;
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        @keyframes fall {
+            to { transform: translateY(105vh); }
+        }
+
+        /* Shake Animation for Wrong Code */
+        .shake {
+            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+        }
+
+        @keyframes shake {
+            10%, 90% { transform: translate3d(-1px, 0, 0); }
+            20%, 80% { transform: translate3d(2px, 0, 0); }
+            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+            40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+
+        /* Giant Background Gift */
+        .giant-gift {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 80vh; /* Format-füllend */
+            z-index: 0;
+            opacity: 0.9;
+            filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
+            pointer-events: none;
+            line-height: 1;
+        }
+
+        /* Lock Mechanism Styles */
+        .lock-container {
+            background: rgba(255, 255, 255, 0.95);
+            border: 8px solid #c0392b;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+        }
+
+        .dial-wrapper {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0 4px;
+        }
+
+        .dial-btn {
+            background: #f1c40f;
+            border: none;
+            color: #d35400;
+            font-size: 1.2rem;
+            width: 40px;
+            height: 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.1s;
+            box-shadow: 0 2px 0 #d35400;
+        }
+        .dial-btn:active {
+            transform: translateY(2px);
+            box-shadow: none;
+        }
+
+        .dial-window {
+            width: 50px;
+            height: 70px;
+            background: #333;
+            border: 4px solid #555;
+            border-radius: 8px;
+            margin: 5px 0;
+            overflow: hidden;
+            position: relative;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+        }
+
+        .dial-strip {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            transition: transform 0.3s ease-out;
+        }
+
+        .dial-number {
+            height: 70px; /* Must match dial-window height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: bold;
+            color: #f1f1f1;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+        }
+        
+        /* Highlight overlay for realism */
+        .dial-window::after {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: linear-gradient(to bottom, rgba(0,0,0,0.8) 0%, rgba(255,255,255,0.1) 50%, rgba(0,0,0,0.8) 100%);
+            pointer-events: none;
+        }
+
+        .action-btn {
+            font-family: 'Mountains of Christmas', cursive;
+            font-weight: bold;
+            letter-spacing: 1px;
+            transition: all 0.2s;
+        }
+
+        /* Success Button Pulse */
+        @keyframes success-pulse {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(39, 174, 96, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 20px rgba(39, 174, 96, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(39, 174, 96, 0); }
+        }
+        .animate-success-pulse {
+            animation: success-pulse 2s infinite;
+        }
+
+    </style>
+</head>
+<body class="h-screen w-screen flex flex-col items-center justify-center select-none relative overflow-hidden">
+
+    <!-- Snow Container -->
+    <div id="snow-container" class="absolute inset-0 overflow-hidden pointer-events-none z-20"></div>
+
+    <!-- The Giant Gift Background -->
+    <div class="giant-gift">🎁</div>
+
+    <!-- Main Lock Container -->
+    <div id="game-container" class="relative z-30 flex flex-col items-center">
+        
+        <!-- Header -->
+        <h1 class="text-4xl md:text-6xl text-white font-bold mb-8 text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] stroke-black">
+            Der Weihnachts-Code
+        </h1>
+
+        <!-- The Lock Mechanism -->
+        <div class="lock-container p-6 flex flex-col items-center max-w-2xl w-full">
+            
+            <!-- Dials Row -->
+            <div class="flex flex-wrap justify-center gap-2 md:gap-4 mb-6">
+                <!-- Dial 1 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(0, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-0">
+                            <!-- Generated by JS -->
+                        </div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(0, 1)">▼</button>
+                </div>
+                <!-- Dial 2 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(1, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-1"></div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(1, 1)">▼</button>
+                </div>
+                <!-- Dial 3 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(2, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-2"></div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(2, 1)">▼</button>
+                </div>
+                <!-- Dial 4 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(3, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-3"></div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(3, 1)">▼</button>
+                </div>
+                <!-- Dial 5 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(4, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-4"></div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(4, 1)">▼</button>
+                </div>
+                <!-- Dial 6 -->
+                <div class="dial-wrapper">
+                    <button class="dial-btn" onclick="rotateDial(5, -1)">▲</button>
+                    <div class="dial-window">
+                        <div class="dial-strip" id="dial-strip-5"></div>
+                    </div>
+                    <button class="dial-btn" onclick="rotateDial(5, 1)">▼</button>
+                </div>
+            </div>
+
+            <!-- Action Buttons Area -->
+            <div id="action-area" class="w-full">
+                <button id="check-btn" onclick="checkCode()" class="action-btn w-full bg-red-600 hover:bg-red-700 text-white text-3xl py-4 rounded-xl shadow-lg border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
+                    ÖFFNEN 🔒
+                </button>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Sad Santa Modal (Hidden by default) -->
+    <div id="error-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center border-4 border-red-500 shadow-2xl transform scale-0 transition-transform duration-300" id="error-content">
+            <div class="text-8xl mb-4">🎅😢</div>
+            <h2 class="text-2xl font-bold text-red-600 mb-2">Oh nein!</h2>
+            <p class="text-gray-700 text-lg mb-6">Der Code ist falsch. Der Weihnachtsmann ist traurig.</p>
+            <button onclick="closeError()" class="bg-red-500 text-white font-bold py-3 px-6 rounded-xl w-full text-xl hover:bg-red-600 transition-colors">
+                Nochmal versuchen
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // --- KONFIGURATION ---
+        const CORRECT_CODE = [1, 9, 8,9, 4, 5]; // Der korrekte Code als Array
+        // Ziel-URL für das Geschenk
+        const TARGET_URL = "https://www.yout-ube.com/watch?v=DO-R5EfG_N4&list=TLGGZfzFx6Tfu-8wNDAxMjAyNg";
+        // ---------------------
+
+        // State for the 6 dials (all start at 0)
+        let dialValues = [0, 0, 0, 0, 0, 0];
+        
+        // Sound effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playTone(freq, type = 'sine', duration = 0.1) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+            gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + duration);
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start();
+            osc.stop(audioCtx.currentTime + duration);
+        }
+
+        // Initialize Dials
+        function initDials() {
+            for (let i = 0; i < 6; i++) {
+                const strip = document.getElementById(`dial-strip-${i}`);
+                let html = '';
+                // Create numbers 0-9
+                for (let n = 0; n <= 9; n++) {
+                    html += `<div class="dial-number">${n}</div>`;
+                }
+                strip.innerHTML = html;
+                updateDialVisual(i);
+            }
+        }
+
+        function rotateDial(index, direction) {
+            // Click sound
+            playTone(300, 'triangle', 0.05);
+
+            // Update value wrapping around 0-9
+            dialValues[index] += direction;
+            if (dialValues[index] > 9) dialValues[index] = 0;
+            if (dialValues[index] < 0) dialValues[index] = 9;
+
+            updateDialVisual(index);
+        }
+
+        function updateDialVisual(index) {
+            const strip = document.getElementById(`dial-strip-${index}`);
+            // Height of one number is 70px
+            const offset = dialValues[index] * -70;
+            strip.style.transform = `translateY(${offset}px)`;
+        }
+
+        function checkCode() {
+            // Check if current values match correct code
+            let isCorrect = true;
+            for (let i = 0; i < 6; i++) {
+                if (dialValues[i] !== CORRECT_CODE[i]) {
+                    isCorrect = false;
+                    break;
+                }
+            }
+
+            if (isCorrect) {
+                // SUCCESS
+                playTone(600, 'sine', 0.1);
+                setTimeout(() => playTone(800, 'sine', 0.4), 100);
+                showSuccessButton();
+            } else {
+                // FAILURE
+                playTone(100, 'sawtooth', 0.5);
+                const container = document.querySelector('.lock-container');
+                container.classList.add('shake');
+                setTimeout(() => container.classList.remove('shake'), 500);
+                showError();
+            }
+        }
+
+        function showSuccessButton() {
+            const actionArea = document.getElementById('action-area');
+            
+            // Transform the button into the "Click Me" button
+            actionArea.innerHTML = `
+                <button onclick="openGift()" class="animate-success-pulse w-full bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(39,174,96,0.6)] border-b-4 border-green-700 transform transition-all">
+                    KLICK MICH AN! 🎁
+                </button>
+            `;
+            
+            // Confetti effect (simple recycled snow logic but faster/colorful)
+            for(let i=0; i<50; i++) {
+                setTimeout(createConfetti, i * 50);
+            }
+        }
+
+        function openGift() {
+            window.location.href = TARGET_URL;
+        }
+
+        function createConfetti() {
+            const container = document.getElementById('snow-container');
+            const flake = document.createElement('div');
+            flake.classList.add('snowflake');
+            flake.textContent = ['🎉', '✨', '🎁', '⭐'][Math.floor(Math.random()*4)];
+            flake.style.left = Math.random() * 100 + 'vw';
+            flake.style.fontSize = (Math.random() * 30 + 20) + 'px';
+            flake.style.animationDuration = (Math.random() * 1 + 1) + 's';
+            flake.style.color = '#'+Math.floor(Math.random()*16777215).toString(16);
+            container.appendChild(flake);
+            setTimeout(() => flake.remove(), 2000);
+        }
+
+        // --- Error Modal Logic ---
+        function showError() {
+            const modal = document.getElementById('error-modal');
+            const content = document.getElementById('error-content');
+            modal.classList.remove('hidden');
+            setTimeout(() => {
+                content.style.transform = "scale(1)";
+            }, 10);
+        }
+
+        function closeError() {
+            const modal = document.getElementById('error-modal');
+            const content = document.getElementById('error-content');
+            content.style.transform = "scale(0)";
+            setTimeout(() => {
+                modal.classList.add('hidden');
+            }, 300);
+        }
+
+        // --- Snow Effect ---
+        function createSnow() {
+            const container = document.getElementById('snow-container');
+            const flake = document.createElement('div');
+            flake.classList.add('snowflake');
+            flake.textContent = '❄';
+            flake.style.left = Math.random() * 100 + 'vw';
+            flake.style.fontSize = (Math.random() * 20 + 10) + 'px';
+            flake.style.animationDuration = (Math.random() * 3 + 2) + 's';
+            flake.style.opacity = Math.random();
+            container.appendChild(flake);
+            setTimeout(() => flake.remove(), 5000);
+        }
+        setInterval(createSnow, 100);
+
+        // Start
+        initDials();
+    </script>
+</body>
+</html>
