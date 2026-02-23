@@ -3,26 +3,26 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Weihnachts-Tresor</title>
+    <title>Geheim-Tresor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Mountains+of+Christmas:wght@400;700&family=Nunito:wght@400;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Fredoka:wght@400;700&family=Nunito:wght@400;700&display=swap');
 
         body {
             font-family: 'Nunito', sans-serif;
-            background: linear-gradient(to bottom, #1a472a, #2d5a3f);
+            background: linear-gradient(to bottom, #4facfe, #00f2fe);
             overflow: hidden;
             touch-action: manipulation;
         }
 
-        h1, h2 {
-            font-family: 'Mountains of Christmas', cursive;
+        h1, h2, .action-btn {
+            font-family: 'Fredoka', sans-serif;
         }
 
-        /* Snowflake Animation */
-        .snowflake {
+        /* Particle Animation */
+        .particle {
             position: absolute;
-            top: -10px;
+            top: -20px;
             color: #fff;
             animation: fall linear forwards;
             z-index: 1;
@@ -30,7 +30,7 @@
         }
 
         @keyframes fall {
-            to { transform: translateY(105vh); }
+            to { transform: translateY(105vh) rotate(360deg); }
         }
 
         /* Shake Animation for Wrong Code */
@@ -57,6 +57,7 @@
             filter: drop-shadow(0 10px 20px rgba(0,0,0,0.5));
             pointer-events: none;
             line-height: 1;
+            transition: opacity 1s ease;
         }
 
         /* Lock Mechanism Styles */
@@ -65,6 +66,7 @@
             border: 8px solid #c0392b;
             border-radius: 20px;
             box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+            transition: transform 0.5s ease, opacity 0.5s ease;
         }
 
         .dial-wrapper {
@@ -115,7 +117,7 @@
         }
 
         .dial-number {
-            height: 70px; /* Must match dial-window height */
+            height: 70px;
             display: flex;
             align-items: center;
             justify-content: center;
@@ -124,8 +126,7 @@
             color: #f1f1f1;
             text-shadow: 0 2px 4px rgba(0,0,0,0.5);
         }
-        
-        /* Highlight overlay for realism */
+
         .dial-window::after {
             content: '';
             position: absolute;
@@ -134,11 +135,16 @@
             pointer-events: none;
         }
 
-        .action-btn {
-            font-family: 'Mountains of Christmas', cursive;
-            font-weight: bold;
-            letter-spacing: 1px;
-            transition: all 0.2s;
+        /* Fireworks Canvas */
+        #fireworksCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 15;
+            pointer-events: none;
+            display: none;
         }
 
         /* Success Button Pulse */
@@ -151,22 +157,55 @@
             animation: success-pulse 2s infinite;
         }
 
+        /* Speech Bubble */
+        .speech-bubble {
+            position: relative;
+            background: #fff;
+            border-radius: .4em;
+            padding: 15px;
+            font-family: 'Fredoka', sans-serif;
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0284c7;
+        }
+        .speech-bubble:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border: 20px solid transparent;
+            border-top-color: #fff;
+            border-bottom: 0;
+            margin-left: -20px;
+            margin-bottom: -20px;
+        }
+
     </style>
 </head>
 <body class="h-screen w-screen flex flex-col items-center justify-center select-none relative overflow-hidden">
 
-    <!-- Snow Container -->
-    <div id="snow-container" class="absolute inset-0 overflow-hidden pointer-events-none z-20"></div>
+    <!-- Teacher Menu Button -->
+    <button onclick="openTeacherLogin()" class="absolute top-4 right-4 z-50 p-3 text-white/60 hover:text-white transition-colors bg-black/10 rounded-full hover:bg-black/20" title="Lehrermenü">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+    </button>
 
-    <!-- The Giant Gift Background -->
-    <div class="giant-gift">🎁</div>
+    <!-- Particle Container -->
+    <div id="particle-container" class="absolute inset-0 overflow-hidden pointer-events-none z-20"></div>
+    
+    <!-- Fireworks Canvas -->
+    <canvas id="fireworksCanvas"></canvas>
+
+    <!-- The Giant Background -->
+    <div class="giant-gift" id="giant-gift">🧰</div>
 
     <!-- Main Lock Container -->
-    <div id="game-container" class="relative z-30 flex flex-col items-center">
+    <div id="game-container" class="relative z-30 flex flex-col items-center transition-all duration-700">
         
         <!-- Header -->
         <h1 class="text-4xl md:text-6xl text-white font-bold mb-8 text-center drop-shadow-[0_4px_4px_rgba(0,0,0,0.8)] stroke-black">
-            Der Weihnachts-Code
+            Knacke den Code!
         </h1>
 
         <!-- The Lock Mechanism -->
@@ -228,31 +267,92 @@
 
             <!-- Action Buttons Area -->
             <div id="action-area" class="w-full">
-                <button id="check-btn" onclick="checkCode()" class="action-btn w-full bg-red-600 hover:bg-red-700 text-white text-3xl py-4 rounded-xl shadow-lg border-b-4 border-red-800 active:border-b-0 active:translate-y-1">
-                    ÖFFNEN 🔒
+                <button id="check-btn" onclick="checkCode()" class="action-btn w-full bg-blue-600 hover:bg-blue-700 text-white text-3xl py-4 rounded-xl shadow-lg border-b-4 border-blue-800 active:border-b-0 active:translate-y-1">
+                    ÖFFNEN 🔓
                 </button>
             </div>
 
         </div>
     </div>
 
-    <!-- Sad Santa Modal (Hidden by default) -->
+    <!-- SUCCESS SCREEN (Hidden by default) -->
+    <div id="success-view" class="fixed inset-0 z-40 hidden flex-col items-center justify-center bg-black/50 backdrop-blur-sm transition-opacity duration-1000 opacity-0 gap-10">
+        
+        <div class="speech-bubble animate-bounce max-w-md mx-4 text-center">
+            Super! Du hast es geschafft!
+        </div>
+
+        <div class="text-9xl drop-shadow-2xl filter hover:scale-110 transition-transform cursor-pointer">
+            🤖
+        </div>
+
+        <button onclick="openGift()" class="animate-success-pulse bg-green-500 hover:bg-green-600 text-white text-2xl md:text-4xl font-bold py-6 px-12 rounded-full shadow-[0_0_50px_rgba(39,174,96,0.8)] border-4 border-white transform transition-all">
+            WEITER GEHT'S! ✨
+        </button>
+    </div>
+
+    <!-- Error Modal (Hidden by default) -->
     <div id="error-modal" class="fixed inset-0 bg-black/60 z-50 hidden flex items-center justify-center">
         <div class="bg-white rounded-2xl p-6 max-w-sm w-full text-center border-4 border-red-500 shadow-2xl transform scale-0 transition-transform duration-300" id="error-content">
-            <div class="text-8xl mb-4">🎅😢</div>
+            <div class="text-8xl mb-4">🤖💦</div>
             <h2 class="text-2xl font-bold text-red-600 mb-2">Oh nein!</h2>
-            <p class="text-gray-700 text-lg mb-6">Der Code ist falsch. Der Weihnachtsmann ist traurig.</p>
+            <p class="text-gray-700 text-lg mb-6">Der Code ist leider falsch. Versuche es nochmal!</p>
             <button onclick="closeError()" class="bg-red-500 text-white font-bold py-3 px-6 rounded-xl w-full text-xl hover:bg-red-600 transition-colors">
                 Nochmal versuchen
             </button>
         </div>
     </div>
 
+    <!-- Teacher Login Modal -->
+    <div id="teacher-login-modal" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 max-w-sm w-full shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-4">Lehrermenü</h2>
+            <p class="text-sm text-gray-600 mb-4">Bitte Passwort eingeben (Standard: lehrer)</p>
+            <input type="password" id="teacher-pw" class="w-full border-2 border-gray-300 rounded-lg p-3 mb-4 text-xl" placeholder="Passwort...">
+            <div class="flex gap-2">
+                <button onclick="closeTeacherLogin()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors">Abbrechen</button>
+                <button onclick="checkTeacherPassword()" class="flex-1 bg-blue-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-blue-700 transition-colors">OK</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Teacher Settings Modal -->
+    <div id="teacher-settings-modal" class="fixed inset-0 bg-black/80 z-[60] hidden flex items-center justify-center">
+        <div class="bg-white rounded-2xl p-6 max-w-md w-full shadow-2xl">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Einstellungen</h2>
+            
+            <div class="mb-4">
+                <label class="block text-gray-700 font-bold mb-2">Neuer 6-stelliger Code:</label>
+                <input type="text" id="setting-code" maxlength="6" pattern="\d{6}" class="w-full border-2 border-gray-300 rounded-lg p-3 text-2xl tracking-widest text-center font-mono" placeholder="123456">
+                <p class="text-xs text-gray-500 mt-1">Nur Zahlen erlauben.</p>
+            </div>
+
+            <div class="mb-6">
+                <label class="block text-gray-700 font-bold mb-2">Ziel-Link (URL):</label>
+                <input type="url" id="setting-url" class="w-full border-2 border-gray-300 rounded-lg p-3" placeholder="https://...">
+            </div>
+
+            <div class="flex gap-2">
+                <button onclick="closeTeacherSettings()" class="flex-1 bg-gray-200 text-gray-800 font-bold py-3 px-4 rounded-xl hover:bg-gray-300 transition-colors">Abbrechen</button>
+                <button onclick="saveTeacherSettings()" class="flex-1 bg-green-600 text-white font-bold py-3 px-4 rounded-xl hover:bg-green-700 transition-colors">Speichern</button>
+            </div>
+        </div>
+    </div>
+
     <script>
         // --- KONFIGURATION ---
-        const CORRECT_CODE = [1, 9, 8,9, 4, 5]; // Der korrekte Code als Array
-        // Ziel-URL für das Geschenk
-        const TARGET_URL = "https://www.youtube-nocookie.com/embed/DO-R5EfG_N4?list=TLGGZfzFx6Tfu-8wNzAxMjAyNg&autoplay=1&iv_load_policy=3&loop=1&start=";
+        let CORRECT_CODE = [1, 2, 3, 4, 5, 6]; // Standard-Code
+        let TARGET_URL = "https://www.youtube-nocookie.com/embed/DO-R5EfG_N4?playlist=DO-R5EfG_N4&autoplay=1&iv_load_policy=3&loop=1&start=";
+        
+        // Einstellungen aus dem Browser-Speicher laden (falls vorhanden)
+        const savedCode = localStorage.getItem('secretCode');
+        if(savedCode && savedCode.length === 6) {
+            CORRECT_CODE = savedCode.split('').map(Number);
+        }
+        const savedUrl = localStorage.getItem('targetUrl');
+        if(savedUrl) {
+            TARGET_URL = savedUrl;
+        }
         // ---------------------
 
         // State for the 6 dials (all start at 0)
@@ -323,7 +423,7 @@
                 // SUCCESS
                 playTone(600, 'sine', 0.1);
                 setTimeout(() => playTone(800, 'sine', 0.4), 100);
-                showSuccessButton();
+                launchSuccessSequence();
             } else {
                 // FAILURE
                 playTone(100, 'sawtooth', 0.5);
@@ -334,37 +434,35 @@
             }
         }
 
-        function showSuccessButton() {
-            const actionArea = document.getElementById('action-area');
+        function launchSuccessSequence() {
+            // 1. Hide Game Container & Background Gift
+            const gameContainer = document.getElementById('game-container');
+            const giantGift = document.getElementById('giant-gift');
             
-            // Transform the button into the "Click Me" button
-            actionArea.innerHTML = `
-                <button onclick="openGift()" class="animate-success-pulse w-full bg-green-500 hover:bg-green-600 text-white text-3xl font-bold py-4 rounded-xl shadow-[0_0_20px_rgba(39,174,96,0.6)] border-b-4 border-green-700 transform transition-all">
-                    KLICK MICH AN! 🎁
-                </button>
-            `;
-            
-            // Confetti effect (simple recycled snow logic but faster/colorful)
-            for(let i=0; i<50; i++) {
-                setTimeout(createConfetti, i * 50);
-            }
+            gameContainer.style.transform = "scale(0) rotate(10deg)";
+            gameContainer.style.opacity = "0";
+            giantGift.style.opacity = "0";
+
+            setTimeout(() => {
+                gameContainer.style.display = 'none';
+                
+                // 2. Show Success View
+                const successView = document.getElementById('success-view');
+                successView.classList.remove('hidden');
+                successView.style.display = 'flex';
+                // Trigger reflow
+                void successView.offsetWidth; 
+                successView.style.opacity = "1";
+
+                // 3. Start Fireworks
+                document.getElementById('fireworksCanvas').style.display = 'block';
+                startFireworks();
+
+            }, 500);
         }
 
         function openGift() {
             window.location.href = TARGET_URL;
-        }
-
-        function createConfetti() {
-            const container = document.getElementById('snow-container');
-            const flake = document.createElement('div');
-            flake.classList.add('snowflake');
-            flake.textContent = ['🎉', '✨', '🎁', '⭐'][Math.floor(Math.random()*4)];
-            flake.style.left = Math.random() * 100 + 'vw';
-            flake.style.fontSize = (Math.random() * 30 + 20) + 'px';
-            flake.style.animationDuration = (Math.random() * 1 + 1) + 's';
-            flake.style.color = '#'+Math.floor(Math.random()*16777215).toString(16);
-            container.appendChild(flake);
-            setTimeout(() => flake.remove(), 2000);
         }
 
         // --- Error Modal Logic ---
@@ -386,26 +484,145 @@
             }, 300);
         }
 
-        // --- Snow Effect ---
-        function createSnow() {
-            const container = document.getElementById('snow-container');
-            const flake = document.createElement('div');
-            flake.classList.add('snowflake');
-            flake.textContent = '❄';
-            flake.style.left = Math.random() * 100 + 'vw';
-            flake.style.fontSize = (Math.random() * 20 + 10) + 'px';
-            flake.style.animationDuration = (Math.random() * 3 + 2) + 's';
-            flake.style.opacity = Math.random();
-            container.appendChild(flake);
-            setTimeout(() => flake.remove(), 5000);
+        // --- Teacher Menu Logic ---
+        function openTeacherLogin() {
+            document.getElementById('teacher-login-modal').classList.remove('hidden');
+            document.getElementById('teacher-pw').value = '';
+            document.getElementById('teacher-pw').focus();
         }
-        setInterval(createSnow, 100);
+
+        function closeTeacherLogin() {
+            document.getElementById('teacher-login-modal').classList.add('hidden');
+        }
+
+        function checkTeacherPassword() {
+            const pw = document.getElementById('teacher-pw').value;
+            if (pw === 'lehrer') {
+                closeTeacherLogin();
+                openTeacherSettings();
+            } else {
+                alert('Falsches Passwort!');
+            }
+        }
+
+        function openTeacherSettings() {
+            document.getElementById('teacher-settings-modal').classList.remove('hidden');
+            document.getElementById('setting-code').value = CORRECT_CODE.join('');
+            document.getElementById('setting-url').value = TARGET_URL;
+        }
+
+        function closeTeacherSettings() {
+            document.getElementById('teacher-settings-modal').classList.add('hidden');
+        }
+
+        function saveTeacherSettings() {
+            const newCodeStr = document.getElementById('setting-code').value;
+            const newUrl = document.getElementById('setting-url').value;
+
+            if (!/^\d{6}$/.test(newCodeStr)) {
+                alert('Der Code muss genau 6 Zahlen enthalten!');
+                return;
+            }
+
+            // Update interne Variablen
+            CORRECT_CODE = newCodeStr.split('').map(Number);
+            TARGET_URL = newUrl;
+
+            // Speicher im Browser
+            localStorage.setItem('secretCode', newCodeStr);
+            localStorage.setItem('targetUrl', newUrl);
+
+            alert('Einstellungen erfolgreich gespeichert!');
+            closeTeacherSettings();
+        }
+
+        // --- Particle Effect (Stars & Bubbles) ---
+        function createParticle() {
+            const container = document.getElementById('particle-container');
+            const flake = document.createElement('div');
+            flake.classList.add('particle');
+            const particles = ['⭐', '✨', '🫧', '🔵'];
+            flake.textContent = particles[Math.floor(Math.random() * particles.length)];
+            flake.style.left = Math.random() * 100 + 'vw';
+            flake.style.fontSize = (Math.random() * 15 + 10) + 'px';
+            flake.style.animationDuration = (Math.random() * 4 + 3) + 's';
+            flake.style.opacity = Math.random() * 0.7 + 0.3;
+            container.appendChild(flake);
+            setTimeout(() => flake.remove(), 7000);
+        }
+        setInterval(createParticle, 150);
+
+        // --- Fireworks Logic (Canvas) ---
+        function startFireworks() {
+            const canvas = document.getElementById('fireworksCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+
+            let particles = [];
+
+            function createParticle(x, y, color) {
+                const particleCount = 40;
+                for (let i = 0; i < particleCount; i++) {
+                    particles.push({
+                        x: x,
+                        y: y,
+                        radius: Math.random() * 4 + 1,
+                        color: color,
+                        velocity: {
+                            x: (Math.random() - 0.5) * 10,
+                            y: (Math.random() - 0.5) * 10
+                        },
+                        alpha: 1,
+                        decay: Math.random() * 0.015 + 0.005
+                    });
+                }
+            }
+
+            function animate() {
+                requestAnimationFrame(animate);
+                // Clear with transparency for trail effect
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)'; 
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Randomly launch fireworks
+                if (Math.random() < 0.08) {
+                    const x = Math.random() * canvas.width;
+                    const y = Math.random() * canvas.height / 2;
+                    const colors = ['#ff0000', '#00ff00', '#ffff00', '#00ffff', '#ff00ff', '#ffffff'];
+                    const color = colors[Math.floor(Math.random() * colors.length)];
+                    createParticle(x, y, color);
+                }
+
+                particles.forEach((particle, index) => {
+                    if (particle.alpha > 0) {
+                        ctx.save();
+                        ctx.globalAlpha = particle.alpha;
+                        ctx.beginPath();
+                        ctx.arc(particle.x, particle.y, particle.radius, 0, Math.PI * 2, false);
+                        ctx.fillStyle = particle.color;
+                        ctx.fill();
+                        ctx.restore();
+
+                        particle.velocity.y += 0.05; // Gravity
+                        particle.x += particle.velocity.x;
+                        particle.y += particle.velocity.y;
+                        particle.alpha -= particle.decay;
+                    } else {
+                        particles.splice(index, 1);
+                    }
+                });
+            }
+            animate();
+            
+            window.addEventListener('resize', () => {
+                canvas.width = window.innerWidth;
+                canvas.height = window.innerHeight;
+            });
+        }
 
         // Start
         initDials();
     </script>
 </body>
-
 </html>
-
-
